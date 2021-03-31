@@ -1,0 +1,27 @@
+syntax = "proto3";
+option go_package = "/models";
+
+message PersonRequest{
+    uint64 id = 1;
+}
+message Person {
+  uint64 id = 1;
+  string name = 2;
+  string email = 3;
+  bool is_active = 4;
+  enum PhoneType {
+    MOBILE = 0;
+    HOME = 1;
+    WORK = 2;
+  }
+   message PhoneNumber {
+    string number = 1;
+    PhoneType type = 2;
+   }
+   
+  repeated PhoneNumber phones = 5;
+}
+
+service Greeter{
+    rpc GetPersonInfo(PersonRequest) returns (Person){}
+}
