@@ -1,0 +1,32 @@
+syntax = "proto3";
+option go_package = "/models";
+
+package grpcgo.rpcservice;
+
+import "models/person.proto";
+
+message GetPersonRequest{
+    string id = 1;
+  }
+  message GetPersonResponse{
+    grpcgo.models.Person person = 1;
+  }
+  
+  message SavePersonRequest{
+    grpcgo.models.Person person = 1;
+  }
+  message SavePersonResponse{
+    string id = 1;
+  }
+
+  message GetPersonStreamRequest{
+
+  }
+  message GetPersonStreamResponse{
+    grpcgo.models.Person person = 1;
+  }
+  service PersonService{
+      rpc GetPerson(GetPersonRequest) returns (GetPersonResponse){}
+      rpc SavePerson(SavePersonRequest)returns(SavePersonResponse){}
+      rpc GetPersonStream(GetPersonStreamRequest)returns(stream GetPersonStreamResponse){}
+  }
