@@ -21,6 +21,7 @@ type PersonServiceClient interface {
 	GetPerson(ctx context.Context, in *GetPersonRequest, opts ...grpc.CallOption) (*GetPersonResponse, error)
 	SavePerson(ctx context.Context, in *SavePersonRequest, opts ...grpc.CallOption) (*SavePersonResponse, error)
 	GetPersonStream(ctx context.Context, in *GetPersonStreamRequest, opts ...grpc.CallOption) (PersonService_GetPersonStreamClient, error)
+	UploadImage(ctx context.Context, opts ...grpc.CallOption) (PersonService_UploadImageClient, error)
 }
 
 type personServiceClient struct {
@@ -81,6 +82,40 @@ func (x *personServiceGetPersonStreamClient) Recv() (*GetPersonStreamResponse, e
 	return m, nil
 }
 
+func (c *personServiceClient) UploadImage(ctx context.Context, opts ...grpc.CallOption) (PersonService_UploadImageClient, error) {
+	stream, err := c.cc.NewStream(ctx, &PersonService_ServiceDesc.Streams[1], "/grpcgo.rpcservice.PersonService/UploadImage", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &personServiceUploadImageClient{stream}
+	return x, nil
+}
+
+type PersonService_UploadImageClient interface {
+	Send(*UploadImageRequest) error
+	CloseAndRecv() (*UploadImageResponse, error)
+	grpc.ClientStream
+}
+
+type personServiceUploadImageClient struct {
+	grpc.ClientStream
+}
+
+func (x *personServiceUploadImageClient) Send(m *UploadImageRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *personServiceUploadImageClient) CloseAndRecv() (*UploadImageResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(UploadImageResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // PersonServiceServer is the server API for PersonService service.
 // All implementations must embed UnimplementedPersonServiceServer
 // for forward compatibility
@@ -88,6 +123,7 @@ type PersonServiceServer interface {
 	GetPerson(context.Context, *GetPersonRequest) (*GetPersonResponse, error)
 	SavePerson(context.Context, *SavePersonRequest) (*SavePersonResponse, error)
 	GetPersonStream(*GetPersonStreamRequest, PersonService_GetPersonStreamServer) error
+	UploadImage(PersonService_UploadImageServer) error
 	mustEmbedUnimplementedPersonServiceServer()
 }
 
@@ -103,6 +139,9 @@ func (UnimplementedPersonServiceServer) SavePerson(context.Context, *SavePersonR
 }
 func (UnimplementedPersonServiceServer) GetPersonStream(*GetPersonStreamRequest, PersonService_GetPersonStreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetPersonStream not implemented")
+}
+func (UnimplementedPersonServiceServer) UploadImage(PersonService_UploadImageServer) error {
+	return status.Errorf(codes.Unimplemented, "method UploadImage not implemented")
 }
 func (UnimplementedPersonServiceServer) mustEmbedUnimplementedPersonServiceServer() {}
 
@@ -174,6 +213,32 @@ func (x *personServiceGetPersonStreamServer) Send(m *GetPersonStreamResponse) er
 	return x.ServerStream.SendMsg(m)
 }
 
+func _PersonService_UploadImage_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(PersonServiceServer).UploadImage(&personServiceUploadImageServer{stream})
+}
+
+type PersonService_UploadImageServer interface {
+	SendAndClose(*UploadImageResponse) error
+	Recv() (*UploadImageRequest, error)
+	grpc.ServerStream
+}
+
+type personServiceUploadImageServer struct {
+	grpc.ServerStream
+}
+
+func (x *personServiceUploadImageServer) SendAndClose(m *UploadImageResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *personServiceUploadImageServer) Recv() (*UploadImageRequest, error) {
+	m := new(UploadImageRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // PersonService_ServiceDesc is the grpc.ServiceDesc for PersonService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -195,6 +260,11 @@ var PersonService_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "GetPersonStream",
 			Handler:       _PersonService_GetPersonStream_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "UploadImage",
+			Handler:       _PersonService_UploadImage_Handler,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "models/person_service.proto",

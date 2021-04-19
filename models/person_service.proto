@@ -25,8 +25,26 @@ message GetPersonRequest{
   message GetPersonStreamResponse{
     grpcgo.models.Person person = 1;
   }
+
+  message UploadImageRequest {
+    oneof data {
+      ImageInfo info = 1;
+      bytes chunk_data = 2;
+    };
+  }
+  
+  message ImageInfo {
+    string person_id = 1;
+    string image_type = 2;
+  }
+  
+  message UploadImageResponse {
+    string id = 1;
+    uint32 size = 2;
+  }
   service PersonService{
       rpc GetPerson(GetPersonRequest) returns (GetPersonResponse){}
       rpc SavePerson(SavePersonRequest)returns(SavePersonResponse){}
       rpc GetPersonStream(GetPersonStreamRequest)returns(stream GetPersonStreamResponse){}
+      rpc UploadImage(stream UploadImageRequest) returns (UploadImageResponse){}
   }
