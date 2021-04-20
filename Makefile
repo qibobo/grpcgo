@@ -8,3 +8,5 @@ server:
 	go run cmd/server/main.go -port 8080
 clients:
 	go run cmd/client/main.go -address 127.0.0.1:8080
+gencert:
+	cd cert && rm *.pem &&./gen.sh&&cd ..

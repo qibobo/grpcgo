@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"log"
@@ -13,6 +14,12 @@ import (
 	"github.com/qibobo/grpcgo/service"
 	"github.com/qibobo/grpcgo/service/store"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+)
+
+const (
+	serverCert = "cert/server-cert.pem"
+	serverKey  = "cert/server-key.pem"
 )
 
 func main() {
@@ -34,9 +41,21 @@ func main() {
 
 	userServer := service.NewAuthServer(userStore, jwtManager)
 	autoInterceptor := interceptor.NewServerInterceptor(accessiableRoles(), jwtManager)
+
+	cert, err := tls.LoadX509KeyPair(serverCert, serverKey)
+	if err != nil {
+		log.Panicf("can not load cert %s\n", err)
+	}
+
 	rpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(autoInterceptor.Unary()),
 		grpc.ChainStreamInterceptor(autoInterceptor.Stream()),
+		grpc.Creds(credentials.NewTLS(
+			&tls.Config{
+				Certificates: []tls.Certificate{cert},
+				ClientAuth:   tls.NoClientCert,
+			}),
+		),
 	)
 	models.RegisterPersonServiceServer(rpcServer, personServer)
 	models.RegisterLoginServiceServer(rpcServer, userServer)

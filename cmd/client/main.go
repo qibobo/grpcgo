@@ -1,7 +1,10 @@
 package main
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"flag"
+	"io/ioutil"
 	"log"
 
 	"github.com/qibobo/grpcgo/auth"
@@ -9,6 +12,7 @@ import (
 	"github.com/qibobo/grpcgo/client"
 	"github.com/qibobo/grpcgo/models"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 func main() {
@@ -16,7 +20,19 @@ func main() {
 	address := flag.String("address", "", "gprc server address")
 	flag.Parse()
 	log.Printf("grpc server address is %s\n", *address)
-	conn, err := grpc.Dial(*address, grpc.WithInsecure())
+	caCert, err := ioutil.ReadFile("cert/ca-cert.pem")
+	if err != nil {
+		log.Panicf("can not read ca cert %s\n", err)
+	}
+	caPool := x509.NewCertPool()
+	ok := caPool.AppendCertsFromPEM(caCert)
+	if !ok {
+		log.Panicf("can not appende ca cert %s\n", err)
+	}
+	tlsConfig := tls.Config{
+		RootCAs: caPool,
+	}
+	conn, err := grpc.Dial(*address, grpc.WithTransportCredentials(credentials.NewTLS(&tlsConfig)))
 	if err != nil {
 		log.Panicf("can not dial to gprc server %s\n", err)
 	}
@@ -25,7 +41,7 @@ func main() {
 	if err != nil {
 		log.Panicf("can not initialize auth interceptor %s\n", err)
 	}
-	conn, err = grpc.Dial(*address, grpc.WithInsecure(),
+	conn, err = grpc.Dial(*address, grpc.WithTransportCredentials(credentials.NewTLS(&tlsConfig)),
 		grpc.WithChainUnaryInterceptor(clientAuthInterceptor.Unary()),
 		grpc.WithChainStreamInterceptor(clientAuthInterceptor.Stream()),
 	)
