@@ -2,8 +2,10 @@ package main
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"time"
@@ -20,6 +22,7 @@ import (
 const (
 	serverCert = "cert/server-cert.pem"
 	serverKey  = "cert/server-key.pem"
+	clientCA   = "cert/ca-cert.pem"
 )
 
 func main() {
@@ -42,18 +45,30 @@ func main() {
 	userServer := service.NewAuthServer(userStore, jwtManager)
 	autoInterceptor := interceptor.NewServerInterceptor(accessiableRoles(), jwtManager)
 
+	//load server cert
 	cert, err := tls.LoadX509KeyPair(serverCert, serverKey)
 	if err != nil {
 		log.Panicf("can not load cert %s\n", err)
 	}
+	//load client ca
 
+	clientCA, err := ioutil.ReadFile(clientCA)
+	if err != nil {
+		log.Panicf("can not load client ca cert %s\n", err)
+	}
+	certPool := x509.NewCertPool()
+	ok := certPool.AppendCertsFromPEM(clientCA)
+	if !ok {
+		log.Panicf("can not append client ca cert %s\n", err)
+	}
 	rpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(autoInterceptor.Unary()),
 		grpc.ChainStreamInterceptor(autoInterceptor.Stream()),
 		grpc.Creds(credentials.NewTLS(
 			&tls.Config{
 				Certificates: []tls.Certificate{cert},
-				ClientAuth:   tls.NoClientCert,
+				ClientAuth:   tls.RequireAndVerifyClientCert,
+				ClientCAs:    certPool,
 			}),
 		),
 	)

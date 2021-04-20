@@ -15,11 +15,18 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
+const (
+	clientCert = "cert/client-cert.pem"
+	clientKey  = "cert/client-key.pem"
+	clientCA   = "cert/ca-cert.pem"
+)
+
 func main() {
 
 	address := flag.String("address", "", "gprc server address")
 	flag.Parse()
 	log.Printf("grpc server address is %s\n", *address)
+	//load server ca
 	caCert, err := ioutil.ReadFile("cert/ca-cert.pem")
 	if err != nil {
 		log.Panicf("can not read ca cert %s\n", err)
@@ -29,8 +36,14 @@ func main() {
 	if !ok {
 		log.Panicf("can not appende ca cert %s\n", err)
 	}
+	//load client cert
+	cert, err := tls.LoadX509KeyPair(clientCert, clientKey)
+	if err != nil {
+		log.Panicf("can not read client cert %s\n", err)
+	}
 	tlsConfig := tls.Config{
-		RootCAs: caPool,
+		Certificates: []tls.Certificate{cert},
+		RootCAs:      caPool,
 	}
 	conn, err := grpc.Dial(*address, grpc.WithTransportCredentials(credentials.NewTLS(&tlsConfig)))
 	if err != nil {
