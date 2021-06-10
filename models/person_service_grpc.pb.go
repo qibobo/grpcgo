@@ -267,5 +267,5 @@ var PersonService_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "models/person_service.proto",
+	Metadata: "person_service.proto",
 }

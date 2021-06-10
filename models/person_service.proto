@@ -3,7 +3,8 @@ option go_package = "/models";
 
 package grpcgo.rpcservice;
 
-import "models/person.proto";
+import "person.proto";
+import "google/api/annotations.proto";
 
 message GetPersonRequest{
     string id = 1;
@@ -43,8 +44,26 @@ message GetPersonRequest{
     uint32 size = 2;
   }
   service PersonService{
-      rpc GetPerson(GetPersonRequest) returns (GetPersonResponse){}
-      rpc SavePerson(SavePersonRequest)returns(SavePersonResponse){}
-      rpc GetPersonStream(GetPersonStreamRequest)returns(stream GetPersonStreamResponse){}
-      rpc UploadImage(stream UploadImageRequest) returns (UploadImageResponse){}
+      rpc GetPerson(GetPersonRequest) returns (GetPersonResponse){
+        option (google.api.http) = {
+          get : "/v1/person/get"
+        };
+      }
+      rpc SavePerson(SavePersonRequest)returns(SavePersonResponse){
+        option (google.api.http) = {
+          post : "/v1/person/save"
+          body : "*"
+        };
+      }
+      rpc GetPersonStream(GetPersonStreamRequest)returns(stream GetPersonStreamResponse){
+        option (google.api.http) = {
+          get : "/v1/person/list"
+        };
+      }
+      rpc UploadImage(stream UploadImageRequest) returns (UploadImageResponse){
+        option (google.api.http) = {
+          post : "/v1/person/upload_image"
+          body : "*"
+        };
+      }
   }

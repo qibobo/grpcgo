@@ -1,0 +1,288 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "person_service.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "PersonService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/person/get": {
+      "get": {
+        "operationId": "PersonService_GetPerson",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/rpcserviceGetPersonResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PersonService"
+        ]
+      }
+    },
+    "/v1/person/list": {
+      "get": {
+        "operationId": "PersonService_GetPersonStream",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/rpcserviceGetPersonStreamResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/rpcStatus"
+                }
+              },
+              "title": "Stream result of rpcserviceGetPersonStreamResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "PersonService"
+        ]
+      }
+    },
+    "/v1/person/save": {
+      "post": {
+        "operationId": "PersonService_SavePerson",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/rpcserviceSavePersonResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/rpcserviceSavePersonRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PersonService"
+        ]
+      }
+    },
+    "/v1/person/upload_image": {
+      "post": {
+        "operationId": "PersonService_UploadImage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/rpcserviceUploadImageResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " (streaming inputs)",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/rpcserviceUploadImageRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PersonService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "modelsPerson": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "phones": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modelsPhoneNumber"
+          }
+        }
+      }
+    },
+    "modelsPhoneNumber": {
+      "type": "object",
+      "properties": {
+        "number": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/modelsPhoneType"
+        }
+      }
+    },
+    "modelsPhoneType": {
+      "type": "string",
+      "enum": [
+        "MOBILE",
+        "HOME",
+        "WORK"
+      ],
+      "default": "MOBILE"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "rpcserviceGetPersonResponse": {
+      "type": "object",
+      "properties": {
+        "person": {
+          "$ref": "#/definitions/modelsPerson"
+        }
+      }
+    },
+    "rpcserviceGetPersonStreamResponse": {
+      "type": "object",
+      "properties": {
+        "person": {
+          "$ref": "#/definitions/modelsPerson"
+        }
+      }
+    },
+    "rpcserviceImageInfo": {
+      "type": "object",
+      "properties": {
+        "personId": {
+          "type": "string"
+        },
+        "imageType": {
+          "type": "string"
+        }
+      }
+    },
+    "rpcserviceSavePersonRequest": {
+      "type": "object",
+      "properties": {
+        "person": {
+          "$ref": "#/definitions/modelsPerson"
+        }
+      }
+    },
+    "rpcserviceSavePersonResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "rpcserviceUploadImageRequest": {
+      "type": "object",
+      "properties": {
+        "info": {
+          "$ref": "#/definitions/rpcserviceImageInfo"
+        },
+        "chunkData": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "rpcserviceUploadImageResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    }
+  }
+}

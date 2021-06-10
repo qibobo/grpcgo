@@ -97,5 +97,5 @@ var LoginService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "models/auth_service.proto",
+	Metadata: "auth_service.proto",
 }
